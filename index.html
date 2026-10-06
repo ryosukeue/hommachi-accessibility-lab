@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本町駅のバリアフリー経路を、設備故障と改善案から比較する意思決定支援プロトタイプ。">
+  <title>本町 Accessibility Lab</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23101923'/%3E%3Cpath d='M14 44h36M18 44V24h28v20M25 24V14h14v10M24 34h16' fill='none' stroke='%2355e0c1' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">H</span>
+      <div>
+        <p class="eyebrow">OSAKA / STATION RESILIENCE</p>
+        <h1>本町 Accessibility Lab</h1>
+      </div>
+    </div>
+    <span class="prototype-badge">検証用モデル</span>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="question-title">
+      <div>
+        <p class="eyebrow">意思決定の問い</p>
+        <h2 id="question-title">エレベーターが止まっても、移動できる駅か。</h2>
+      </div>
+      <p class="intro-copy">設備の「有無」ではなく、故障時の到達可能性と、限られた予算で改善できる人数を比較します。</p>
+    </section>
+
+    <section class="control-strip" aria-label="シミュレーション条件">
+      <label>
+        <span>故障シナリオ</span>
+        <select id="failure-select">
+          <option value="none">故障なし</option>
+          <option value="midosuji">御堂筋線 EV停止</option>
+          <option value="chuo">中央線 EV停止</option>
+          <option value="yotsubashi">四つ橋線 EV停止</option>
+        </select>
+      </label>
+      <label>
+        <span>改善案</span>
+        <select id="investment-select">
+          <option value="none">現状のまま</option>
+          <option value="duplicate-chuo">A：中央線EVを複線化</option>
+          <option value="transfer-link">B：乗換連絡路を改善</option>
+          <option value="east-exit">C：東側アクセスを追加</option>
+        </select>
+      </label>
+      <button id="compare-button" type="button">改善前後を比較</button>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="network-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">NETWORK MODEL</p>
+            <h2>バリアフリー経路ネットワーク</h2>
+          </div>
+          <div class="legend" aria-label="凡例">
+            <span><i class="legend-line active"></i>利用可</span>
+            <span><i class="legend-line failed"></i>停止</span>
+            <span><i class="legend-line proposed"></i>改善案</span>
+          </div>
+        </div>
+        <svg id="network-map" viewBox="0 0 820 520" role="img" aria-labelledby="map-title map-desc">
+          <title id="map-title">本町駅バリアフリー経路の概念図</title>
+          <desc id="map-desc">御堂筋線、中央線、四つ橋線と地上出入口を結ぶ、検証用の模式的ネットワークです。</desc>
+        </svg>
+        <p class="model-note">公式構内図を参照した概念モデル。位置・所要時間・設備IDは現地調査前の仮説値です。</p>
+      </article>
+
+      <aside class="metrics-panel" aria-live="polite">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">IMPACT</p>
+            <h2>現在の評価</h2>
+          </div>
+          <span id="status-pill" class="status-pill">通常</span>
+        </div>
+        <div class="primary-metric">
+          <span>到達可能率</span>
+          <strong id="reachability">100%</strong>
+          <div class="meter"><span id="reachability-bar"></span></div>
+          <small>主要5地点間の移動可能ODペア</small>
+        </div>
+        <div class="metric-list">
+          <div><span>移動不能OD</span><strong id="blocked-pairs">0 / 20</strong></div>
+          <div><span>平均迂回時間</span><strong id="detour-time">0分</strong></div>
+          <div><span>代替経路あり</span><strong id="redundant-rate">60%</strong></div>
+          <div><span>影響利用者</span><strong id="affected-users">0人/日</strong></div>
+        </div>
+        <div id="decision-note" class="decision-note">すべての主要地点へ到達できます。ただし、一部経路はEVが単一障害点です。</div>
+      </aside>
+    </section>
+
+    <section class="investment-section" aria-labelledby="investment-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">INVESTMENT OPTIONS</p>
+          <h2 id="investment-title">どこを直すと効果が最大か</h2>
+        </div>
+        <p>概算費用・需要は仮説値</p>
+      </div>
+      <div id="investment-cards" class="investment-cards"></div>
+    </section>
+
+    <section class="evidence-section">
+      <div>
+        <p class="eyebrow">DATA STATUS</p>
+        <h2>事実と仮説を分ける</h2>
+      </div>
+      <div class="evidence-grid">
+        <div>
+          <span class="evidence-label verified">確認済み</span>
+          <p>公式構内図、路線接続、バリアフリー経路の存在</p>
+        </div>
+        <div>
+          <span class="evidence-label provisional">要現地検証</span>
+          <p>移動時間、EV待ち時間、障害時の通行可否、通路幅</p>
+        </div>
+        <div>
+          <span class="evidence-label estimated">試算値</span>
+          <p>影響人数、工事費、年間削減時間、費用対効果</p>
+        </div>
+      </div>
+      <details>
+        <summary>データ出典と利用上の注意</summary>
+        <p>基礎資料：Osaka Metro公式「本町駅構内図」「バリアフリー設備」。このプロトタイプは設備投資案の比較方法を検証するもので、実際の移動案内には使用できません。</p>
+        <div class="source-links">
+          <a href="https://subway.osakametro.co.jp/station_guide/station/M18_%E6%9C%AC%E7%94%BA_%E6%A7%8B%E5%86%85_r.pdf" target="_blank" rel="noreferrer">本町駅構内図</a>
+          <a href="https://subway.osakametro.co.jp/barriafree/subway/barriar_free_subway/barriar_free_subway.php" target="_blank" rel="noreferrer">Osaka Metro バリアフリー施策</a>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <span>本町 Accessibility Lab — MVP 0.1</span>
+    <span>意思決定支援 / 移動案内ではありません</span>
+  </footer>
+
+  <dialog id="compare-dialog">
+    <form method="dialog">
+      <button class="dialog-close" aria-label="閉じる">×</button>
+      <p class="eyebrow">BEFORE / AFTER</p>
+      <h2 id="dialog-title">改善効果</h2>
+      <div id="comparison-content"></div>
+      <button class="dialog-action">閉じる</button>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
